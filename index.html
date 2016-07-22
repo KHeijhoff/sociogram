@@ -1,0 +1,155 @@
+ <!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>Sociogram</title>
+		<link rel="stylesheet" media="all" href="style_screen.css" />
+	</head>
+	<body>
+		<ul id="menu">
+			<li id="button_submenu">
+				<svg width="1.5em" height="1em" viewBox="0 0 1.5 1" style="stroke:white;stroke-width:0.15;stroke-linecap:round">
+					<line x1="0.075" y1="0.075" x2="1.425" y2="0.075" />
+					<line x1="0.075" y1="0.5" x2="1.425" y2="0.5" />
+					<line x1="0.075" y1="0.925" x2="1.425" y2="0.925" />
+				</svg>
+			</li>
+			<li id="button_lock">
+				<svg width="1.5em" height="1em" viewBox="0 0 644 1073">
+					<rect x="0" y="543" width="644" height="530" fill="white"/>
+					<path id="shackle_locked" d="M 82, 543 v -153 a 240, 240 0 0 1 480 0 v 153" fill="none" stroke="white" stroke-width="100" stroke-linecap="square" visibility="hidden"/>
+					<path id="shackle_unlocked" d="M 82, 543 v -253 a 240, 240 0 0 0 -480 0 v 153" fill="none" stroke="white" stroke-width="100" stroke-linecap="square" />
+				</svg>
+			</li>
+			<li id="button_groupinp">namenlijst</li>
+			<li id="button_positive">Positief</li>
+			<li id="button_negative">Negatief</li>
+		</ul> 
+		<ul id="submenu" class="hide">
+			<li id="button_new">Nieuw</li>
+			<li id="button_import_data">Data openen</li>
+			<li id="button_export_data">Data opslaan</li>
+			<li id="button_export_sociogram">Sociogram opslaan</li>
+		</ul> 
+		
+		<input type="file" id="files" name="files" accept=".txt" class="hide"/>
+		
+		<div id="menu_spacer"></div>
+		
+		<div id="content_groupinp" class="content hide">
+			<fieldset>
+				<legend>Klas</legend>
+				<table id="group_info">
+					<tr><td><label for="group_description">Beschrijving:</label></td><td><input id="group_description" name="group_description" type="text" value="" autocomplete="off"></td></tr>
+					<tr><td><label for="number_of_persons">Aantal leerlingen:</label></td><td><input id="number_of_persons" name="number_of_persons" type="text" size="2" value="0" autocomplete="off"></td></tr>
+				</table>
+			</fieldset>
+			<fieldset id="persons" class="hide">
+				<legend>Leerlingen</legend>
+				<table id="persons_list"> 
+					<tr class="header"><td></td><td>Voornaam</td><td>Achternaam</td><td>Jongen</td><td>Meisje</td></tr>
+				</table>
+			</fieldset>
+		</div>
+		<div id="content_sociogram" class="content hide">
+			<svg  id="svg_sociogram"></svg>
+		</div>
+		<div id="loading" class="hide"></div>
+		
+		
+		<script> console.clear(); </script>
+		<script src="libs/Blob.js/Blob.js"></script>
+		<script src="libs/FileSaver.js/FileSaver.min.js"></script>
+		<script src="libs/jsPDF/jspdf.min.js"></script>
+		<script src="functions.js"></script>
+		<script src="Group.js"></script>
+		<script src="GroupInput.js"></script>
+		<script src="MyContext2D.js"></script>
+		<script src="Sociogram.js"></script>
+		<script src="Menu.js"></script>
+		<script>
+			
+			// Create some random data for testing
+			{
+				let set_persons = [["Huong", "Babin", "f"], ["Joanie", "Biscoe", "f"], ["Debi", "Boller", "f"], ["Carlos", "Bristow", "m"], ["Judith", "Callis", "f"], ["Leonila", "Carls", "f"], ["Johnny", "Cliett", "m"], ["Pearlie", "Courser", "f"], ["Shanel", "Edens", "f"], ["Rozella", "Felder", "f"], ["Jeanelle", "Fenske", "f"], ["Farrah", "Foree", "f"], ["Prince", "Forry", "m"], ["Cleveland", "Frenkel", "m"], ["Mariano", "Fujimoto", "m"], ["Helene", "Galarza", "f"], ["Jeanett", "Gautreau", "f"], ["Mireya", "Gillespie", "f"], ["Alphonse", "Gruver", "m"], ["Berenice", "Guel", "f"], ["Betty", "Harms", "f"], ["Barton", "Hinson", "m"], ["Twyla", "Iliff", "f"], ["Kiana", "Jarvie", "f"], ["Inez", "Kersey", "f"], ["Alecia", "Kramer", "f"], ["Foster", "Kupfer", "m"], ["Alda", "Landsman", "f"], ["Jolynn", "Lannon", "f"], ["Darnell", "Malson", "m"], ["Latoya", "Mariano", "f"], ["Benny", "Martelli", "m"], ["Jeanine", "Mcfadin", "f"], ["Frederick", "Mcglamery", "m"], ["Ronald", "Mowbray", "m"], ["Abram", "Ocana", "m"], ["Azzie", "Pille", "f"], ["Kenyetta", "Pitts", "f"], ["Ching", "Robinett", "f"], ["Raymundo", "Ruston", "m"], ["Janessa", "Sabado", "f"], ["Hortencia", "Scherrer", "f"], ["Sheree", "Shatzer", "f"], ["Leontine", "Stcyr", "f"], ["Christal", "Steven", "f"], ["Florencio", "Stolz", "m"], ["Annemarie", "Vankeuren", "f"], ["Carlena", "Ver", "f"], ["Rubie", "Viramontes", "f"], ["Tricia", "Wymore", "f"]]; 
+				let n = 25 + Math.floor(Math.random()*11);
+								
+				while(set_persons.length > n)
+					set_persons.splice(Math.floor(Math.random()*set_persons.length), 1);
+				
+				Group.SetDescription(String.fromCharCode(49 + Math.floor(Math.random()*2), 65 + Math.floor(Math.random()*7)));
+				Group.Resize(n);
+				
+				for(let i=0; i<n; ++i)
+				{
+					Group.SetPerson(i, set_persons[i][0], set_persons[i][1], set_persons[i][2]);
+					for(let s=0; s<2; ++s)
+					for(let j=0; j<3; ++j)
+					{
+						var k = Math.floor(Math.random()*n);
+						if(i == k || (Group.GetConnectionType(i, k, s)&1))
+						{
+							--j;
+							continue;
+						}
+						Group.AddConnection(i, k, s);
+					}
+		
+				}	
+					
+				GroupInput.UpdateForm();
+			}
+		</script>
+	</body>
+</html> 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
